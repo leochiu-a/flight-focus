@@ -15,7 +15,37 @@ type FlightMapProps = {
   zoom: number;
 };
 
-const mapStyle = "https://demotiles.maplibre.org/style.json";
+const mapStyle: maplibregl.StyleSpecification = {
+  version: 8,
+  sources: {
+    satellite: {
+      type: "raster",
+      tiles: [
+        "https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+      ],
+      tileSize: 256,
+    },
+  },
+  layers: [
+    {
+      id: "background",
+      type: "background",
+      paint: { "background-color": "#05070d" },
+    },
+    {
+      id: "satellite",
+      type: "raster",
+      source: "satellite",
+      paint: {
+        "raster-brightness-min": 0.15,
+        "raster-brightness-max": 1,
+        "raster-contrast": 0.25,
+        "raster-saturation": 0.05,
+        "raster-opacity": 0.9,
+      },
+    },
+  ],
+};
 
 const planeSvg = `
 <svg viewBox="0 0 48 48" aria-hidden="true">
@@ -58,6 +88,7 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
       zoom,
       pitch: 48,
       bearing: 20,
+      maxZoom: 9,
       interactive: false,
       attributionControl: false,
     });
@@ -65,18 +96,6 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
     mapRef.current = map;
 
     map.on("load", () => {
-      const baseLayers = map.getStyle().layers ?? [];
-      baseLayers.forEach((layer) => {
-        if (
-          layer.type === "symbol" ||
-          layer.type === "line" ||
-          layer.type === "fill-extrusion" ||
-          layer.type === "circle"
-        ) {
-          map.setLayoutProperty(layer.id, "visibility", "none");
-        }
-      });
-
       map.addSource("route-complete", {
         type: "geojson",
         data: buildLineString([routeData.origin, routeData.origin]),
@@ -169,7 +188,7 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
     map.easeTo({
       center: position,
       bearing: heading,
-      zoom,
+      zoom: Math.min(zoom, 9),
       duration: 900,
       easing: (t) => t,
     });

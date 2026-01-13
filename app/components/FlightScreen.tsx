@@ -93,7 +93,7 @@ export default function FlightScreen() {
                   className="h-1 w-36 cursor-pointer appearance-none rounded-full bg-white/10 accent-[#8ab9ff]"
                   type="range"
                   min="4.5"
-                  max="15"
+                  max="9"
                   step="0.1"
                   value={zoom}
                   onChange={(event) => setZoom(Number(event.target.value))}
