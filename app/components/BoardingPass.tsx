@@ -286,7 +286,7 @@ export default function BoardingPass({
         {!isTorn && (
           <div className="absolute inset-0 flex items-center justify-center bg-white/0 transition-all duration-300 group-hover:bg-white/5">
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-slate-900/80 px-3 py-1.5 text-[10px] uppercase tracking-[0.4em] text-slate-200 opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
-              Tear Here
+              Board Now
             </div>
           </div>
         )}
