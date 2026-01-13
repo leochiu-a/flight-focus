@@ -38,7 +38,7 @@ export default function FlightScreen() {
     "select" | "checkin" | "in_flight" | "completed" | "cancelled"
   >("select");
   const [selectedFlight, setSelectedFlight] = useState(FLIGHTS[0]);
-  const [zoom, setZoom] = useState(6.2);
+  const [zoom, setZoom] = useState(8);
   const passengerName = "Focus Pilot";
   const { progress, remainingSeconds, isComplete, reset } = useFlightTimer(
     selectedFlight.durationSeconds,
