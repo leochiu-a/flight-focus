@@ -1,5 +1,6 @@
 "use client";
 
+import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
 import { useFlightTimer } from "../hooks/useFlightTimer";
 import { formatTime } from "../lib/time";
@@ -214,22 +215,19 @@ export default function FlightScreen() {
                     {formatTime(selectedFlight.durationSeconds)}.
                   </p>
                 </div>
-                <div className="flex flex-wrap gap-4">
-                  <button
-                    className="rounded-full bg-[#8ab9ff] px-6 py-3 text-xs uppercase tracking-[0.4em] text-[#05070d] transition hover:bg-[#a6c8ff]"
-                    type="button"
-                    onClick={handleStart}
-                  >
-                    Begin Flight
-                  </button>
-                  <button
-                    className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
-                    type="button"
-                    onClick={handleReset}
-                  >
-                    Back to Routes
-                  </button>
-                </div>
+                <BoardingPass
+                  origin={selectedFlight.origin}
+                  destination={selectedFlight.destination}
+                  durationSeconds={selectedFlight.durationSeconds}
+                  onTear={handleStart}
+                />
+                <button
+                  className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
+                  type="button"
+                  onClick={handleReset}
+                >
+                  Back to Routes
+                </button>
               </div>
             )}
           </div>
