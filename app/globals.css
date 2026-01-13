@@ -113,28 +113,33 @@ body {
 .map-container {
   position: absolute;
   inset: 0;
+  z-index: 1;
 }
 
 .map-overlay {
   position: absolute;
   inset: 0;
+  z-index: 0;
   background: radial-gradient(circle at 20% 20%, rgba(120, 170, 255, 0.08), transparent 50%),
     radial-gradient(circle at 80% 60%, rgba(24, 34, 56, 0.6), transparent 55%);
   pointer-events: none;
 }
 
 .plane-marker {
-  width: 28px;
-  height: 28px;
+  width: 60px;
+  height: 60px;
   display: grid;
   place-items: center;
-  filter: drop-shadow(0 0 8px rgba(138, 185, 255, 0.6));
+  z-index: 2;
+  filter: drop-shadow(0 8px 16px rgba(5, 8, 16, 0.75))
+    drop-shadow(0 0 18px rgba(138, 185, 255, 0.55));
 }
 
-.plane-marker svg {
+.plane-marker img {
   width: 100%;
   height: 100%;
-  fill: #f3f7ff;
+  display: block;
+  object-fit: contain;
 }
 
 .airport-marker {

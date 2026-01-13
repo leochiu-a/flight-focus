@@ -52,9 +52,7 @@ const mapStyle: maplibregl.StyleSpecification = {
 };
 
 const planeSvg = `
-<svg viewBox="0 0 48 48" aria-hidden="true">
-  <path d="M24 4l4 12 14 6-14 6-4 12-4-12-14-6 14-6 4-12z" />
-</svg>
+<img src="/plane.png" alt="" aria-hidden="true" />
 `;
 
 const buildLineString = (coords: Coordinate[]) => ({
