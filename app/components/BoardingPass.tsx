@@ -7,6 +7,7 @@ type BoardingPassProps = {
   origin: string;
   destination: string;
   durationSeconds: number;
+  passengerName: string;
   onTear: () => void;
   debug?: boolean;
 };
@@ -48,6 +49,7 @@ export default function BoardingPass({
   origin,
   destination,
   durationSeconds,
+  passengerName,
   onTear,
   debug = false,
 }: BoardingPassProps) {
@@ -61,6 +63,7 @@ export default function BoardingPass({
 
   const fromCity = CITY_NAMES[origin] ?? "Origin";
   const toCity = CITY_NAMES[destination] ?? "Destination";
+  const passengerShort = passengerName.split(" ")[0] || passengerName;
 
   const mainTicketMask: CSSProperties = {
     maskImage:
@@ -141,7 +144,7 @@ export default function BoardingPass({
                 Passenger
               </span>
               <span className="truncate text-sm font-semibold text-slate-100">
-                Focus Pilot
+                {passengerName}
               </span>
             </div>
             <div className="flex flex-col">
@@ -236,7 +239,7 @@ export default function BoardingPass({
                 Passenger
               </span>
               <span className="truncate text-xs font-semibold text-slate-100">
-                Focus
+                {passengerShort}
               </span>
             </div>
             <div className="flex flex-col text-right">

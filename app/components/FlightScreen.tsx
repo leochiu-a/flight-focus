@@ -39,6 +39,7 @@ export default function FlightScreen() {
   >("select");
   const [selectedFlight, setSelectedFlight] = useState(FLIGHTS[0]);
   const [zoom, setZoom] = useState(6.2);
+  const passengerName = "Focus Pilot";
   const { progress, remainingSeconds, isComplete, reset } = useFlightTimer(
     selectedFlight.durationSeconds,
     flightState === "in_flight"
@@ -219,6 +220,7 @@ export default function FlightScreen() {
                   origin={selectedFlight.origin}
                   destination={selectedFlight.destination}
                   durationSeconds={selectedFlight.durationSeconds}
+                  passengerName={passengerName}
                   onTear={handleStart}
                 />
                 <button

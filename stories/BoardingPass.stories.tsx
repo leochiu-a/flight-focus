@@ -28,17 +28,7 @@ export const Default: Story = {
     origin: "TPE",
     destination: "HND",
     durationSeconds: 25 * 60,
+    passengerName: "Leo Chiu",
     onTear: () => {},
-    debug: false,
-  },
-};
-
-export const Debug: Story = {
-  args: {
-    origin: "SFO",
-    destination: "LAX",
-    durationSeconds: 15 * 60,
-    onTear: () => {},
-    debug: true,
   },
 };
