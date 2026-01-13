@@ -144,7 +144,7 @@ export default function FlightScreen() {
   }, [flightState, remainingSeconds, selectedFlight.durationSeconds]);
 
   return (
-    <div className="relative min-h-screen bg-[var(--background)] text-[var(--foreground)]">
+    <div className="relative min-h-screen text-[var(--foreground)]">
       {flightState === "in_flight" ||
       flightState === "completed" ||
       flightState === "cancelled" ? (
@@ -175,21 +175,21 @@ export default function FlightScreen() {
           )}
           <header className="hud-bar absolute left-0 right-0 top-0 z-10 mx-4 mt-4 flex flex-wrap items-center justify-between gap-4 px-6 py-4 sm:mx-10">
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
+              <p className="text-xs uppercase tracking-[0.4em] text-slate-200">
                 Focus Flight
               </p>
               <div className="mt-1 flex items-baseline gap-3">
-                <h1 className="text-2xl font-semibold tracking-[0.18em]">
+                <h1 className="text-2xl font-semibold tracking-[0.18em] text-slate-100">
                   {selectedFlight.origin} -&gt; {selectedFlight.destination}
                 </h1>
               </div>
             </div>
             <div className="flex flex-1 items-center justify-end gap-6">
               <div className="text-right">
-                <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-200">
                   Remaining
                 </p>
-                <p className="mt-1 font-mono text-2xl tracking-[0.2em]">
+                <p className="mt-1 font-mono text-2xl tracking-[0.2em] text-slate-100">
                   {formatTime(remainingSeconds)}
                 </p>
               </div>
@@ -231,7 +231,7 @@ export default function FlightScreen() {
           </header>
         </>
       ) : (
-        <div className="relative min-h-screen px-6 py-10">
+        <div className="relative min-h-screen">
           <div className="ife-shell w-full rounded-[32px] px-8 py-10">
             {flightState === "select" && (
               <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(138,185,255,0.12),_transparent_55%),_linear-gradient(180deg,_rgba(5,7,13,0.85),_rgba(5,7,13,0.6))] p-8">
@@ -365,12 +365,12 @@ export default function FlightScreen() {
               </div>
             )}
             {flightState === "checkin" && (
-              <div className="flex flex-col items-start gap-8">
+              <div className="flex flex-col items-center gap-8">
                 <div>
                   <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
                     Check-in
                   </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em]">
+                  <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
                     {selectedFlight.origin} → {selectedFlight.destination}
                   </h2>
                   <p className="mt-3 text-sm text-slate-300">
