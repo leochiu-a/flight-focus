@@ -13,6 +13,8 @@ import {
 type FlightMapProps = {
   progress: number;
   zoom: number;
+  fitToBoundsSignal?: number;
+  cameraMode?: "follow" | "fit";
   origin: Coordinate;
   destination: Coordinate;
   originLabel: string;
@@ -67,6 +69,8 @@ const buildLineString = (coords: Coordinate[]) => ({
 export default function FlightMap({
   progress,
   zoom,
+  fitToBoundsSignal = 0,
+  cameraMode = "follow",
   origin,
   destination,
   originLabel,
@@ -177,6 +181,7 @@ export default function FlightMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loadedRef.current) return;
+    if (cameraMode !== "follow") return;
 
     const { position, heading, segmentIndex } = interpolateRoute(
       routeData.path,
@@ -204,7 +209,24 @@ export default function FlightMap({
         easing: (t) => t,
       });
     }
-  }, [progress, routeData, zoom]);
+  }, [cameraMode, progress, routeData, zoom]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !loadedRef.current) return;
+    if (cameraMode !== "fit") return;
+
+    const bounds = new maplibregl.LngLatBounds();
+    bounds.extend(routeData.origin);
+    bounds.extend(routeData.destination);
+    map.fitBounds(bounds, {
+      padding: 80,
+      duration: 800,
+      bearing: 0,
+    });
+    map.setBearing(0);
+    map.setPitch(0);
+  }, [cameraMode, fitToBoundsSignal, routeData.origin, routeData.destination]);
 
   return (
     <div className="map-shell h-full w-full min-h-[60vh]">

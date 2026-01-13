@@ -108,6 +108,8 @@ export default function FlightScreen() {
   >("select");
   const [selectedFlight, setSelectedFlight] = useState(FLIGHTS[0]);
   const [zoom, setZoom] = useState(8);
+  const [cameraMode, setCameraMode] = useState<"follow" | "fit">("follow");
+  const [fitToBoundsSignal, setFitToBoundsSignal] = useState(0);
   const passengerName = "Focus Pilot";
   const { progress, remainingSeconds, isComplete, reset } = useFlightTimer(
     selectedFlight.durationSeconds,
@@ -153,6 +155,8 @@ export default function FlightScreen() {
             <FlightMap
               progress={progress}
               zoom={zoom}
+              fitToBoundsSignal={fitToBoundsSignal}
+              cameraMode={cameraMode}
               origin={selectedFlight.originCoord}
               destination={selectedFlight.destinationCoord}
               originLabel={selectedFlight.origin}
@@ -208,6 +212,20 @@ export default function FlightScreen() {
                   {zoom.toFixed(1)}x
                 </span>
               </div>
+              <button
+                className="rounded-full border border-white/20 px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-slate-200 transition hover:border-white/40 hover:text-white"
+                type="button"
+                onClick={() => {
+                  if (cameraMode === "fit") {
+                    setCameraMode("follow");
+                    return;
+                  }
+                  setCameraMode("fit");
+                  setFitToBoundsSignal((value) => value + 1);
+                }}
+              >
+                {cameraMode === "fit" ? "Follow Plane" : "Fit Route"}
+              </button>
               <div className="flex items-center gap-3">
                 {flightState === "in_flight" ? (
                   <button
