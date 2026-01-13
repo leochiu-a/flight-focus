@@ -13,6 +13,10 @@ import {
 type FlightMapProps = {
   progress: number;
   zoom: number;
+  origin: Coordinate;
+  destination: Coordinate;
+  originLabel: string;
+  destinationLabel: string;
 };
 
 const mapStyle: maplibregl.StyleSpecification = {
@@ -62,21 +66,27 @@ const buildLineString = (coords: Coordinate[]) => ({
   properties: {},
 });
 
-export default function FlightMap({ progress, zoom }: FlightMapProps) {
+export default function FlightMap({
+  progress,
+  zoom,
+  origin,
+  destination,
+  originLabel,
+  destinationLabel,
+}: FlightMapProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const mapRef = useRef<maplibregl.Map | null>(null);
   const loadedRef = useRef(false);
   const planeMarkerRef = useRef<maplibregl.Marker | null>(null);
   const completeSourceRef = useRef<GeoJSONSource | null>(null);
   const remainingSourceRef = useRef<GeoJSONSource | null>(null);
+  const lastCameraUpdateRef = useRef(0);
 
   const routeData = useMemo(() => {
-    const origin: Coordinate = [121.233, 25.08];
-    const destination: Coordinate = [139.78, 35.55];
     const path = buildBezierRoute(origin, destination, 180);
     const metrics = buildRouteMetrics(path);
     return { origin, destination, path, metrics };
-  }, []);
+  }, [origin, destination]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -146,7 +156,7 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
 
       const originEl = document.createElement("div");
       originEl.className = "airport-marker";
-      originEl.textContent = "TPE";
+      originEl.textContent = originLabel;
 
       new maplibregl.Marker({ element: originEl })
         .setLngLat(routeData.origin)
@@ -154,7 +164,7 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
 
       const destEl = document.createElement("div");
       destEl.className = "airport-marker";
-      destEl.textContent = "HND";
+      destEl.textContent = destinationLabel;
 
       new maplibregl.Marker({ element: destEl })
         .setLngLat(routeData.destination)
@@ -164,7 +174,7 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
     });
 
     return () => map.remove();
-  }, [routeData]);
+  }, [routeData, originLabel, destinationLabel]);
 
   useEffect(() => {
     const map = mapRef.current;
@@ -185,13 +195,17 @@ export default function FlightMap({ progress, zoom }: FlightMapProps) {
     remainingSourceRef.current?.setData(buildLineString(remaining));
     planeMarkerRef.current?.setLngLat(position).setRotation(heading);
 
-    map.easeTo({
-      center: position,
-      bearing: heading,
-      zoom: Math.min(zoom, 9),
-      duration: 900,
-      easing: (t) => t,
-    });
+    const now = performance.now();
+    if (now - lastCameraUpdateRef.current > 400) {
+      lastCameraUpdateRef.current = now;
+      map.easeTo({
+        center: position,
+        bearing: heading,
+        zoom: Math.min(zoom, 9),
+        duration: 800,
+        easing: (t) => t,
+      });
+    }
   }, [progress, routeData, zoom]);
 
   return (
