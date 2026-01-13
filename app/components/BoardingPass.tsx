@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { formatTime } from "../lib/time";
 
 type BoardingPassProps = {
@@ -18,6 +18,30 @@ const CITY_NAMES: Record<string, string> = {
   HKG: "Hong Kong",
   SFO: "San Francisco",
   LAX: "Los Angeles",
+};
+
+const BARCODE_LENGTH = 40;
+
+const hashSeed = (value: string) => {
+  let hash = 0;
+  for (let i = 0; i < value.length; i += 1) {
+    hash = (hash * 31 + value.charCodeAt(i)) | 0;
+  }
+  return hash >>> 0;
+};
+
+const createBarcodeRows = (seedValue: string) => {
+  let state = hashSeed(seedValue);
+  const next = () => {
+    state = (state * 1664525 + 1013904223) >>> 0;
+    return state / 0x100000000;
+  };
+
+  return Array.from({ length: BARCODE_LENGTH }, (_, i) => ({
+    key: `barcode-${i}`,
+    width: next() > 0.5 ? "2px" : "1px",
+    opacity: next() > 0.2 ? 1 : 0.3,
+  }));
 };
 
 export default function BoardingPass({
@@ -55,6 +79,11 @@ export default function BoardingPass({
     maskComposite: "intersect",
     WebkitMaskComposite: "source-in",
   };
+
+  const barcodeRows = useMemo(
+    () => createBarcodeRows(`${origin}-${destination}`),
+    [origin, destination]
+  );
 
   return (
     <div className="relative flex flex-col items-stretch select-none md:flex-row">
@@ -119,7 +148,9 @@ export default function BoardingPass({
               <span className="mb-1 text-[10px] uppercase tracking-[0.4em] text-slate-400">
                 Flight No.
               </span>
-              <span className="text-sm font-semibold text-slate-100">FF019</span>
+              <span className="text-sm font-semibold text-slate-100">
+                FF019
+              </span>
             </div>
             <div className="flex flex-col">
               <span className="mb-1 text-[10px] uppercase tracking-[0.4em] text-slate-400">
@@ -170,7 +201,9 @@ export default function BoardingPass({
         onClick={handleTear}
         style={stubMask}
         className={`ticket-stub group relative flex h-[320px] w-full cursor-pointer flex-col overflow-hidden rounded-r-3xl border border-l-0 border-white/10 bg-slate-900/80 shadow-[0_24px_80px_rgba(5,10,25,0.55)] backdrop-blur transition-all duration-700 ease-in-out md:w-[240px] ${
-          isTorn ? "tearing-animation pointer-events-none" : "hover:bg-slate-900/60"
+          isTorn
+            ? "tearing-animation pointer-events-none"
+            : "hover:bg-slate-900/60"
         }`}
       >
         <div className="flex h-16 items-center whitespace-nowrap border-b border-white/10 bg-gradient-to-r from-slate-900/80 via-slate-900/60 to-slate-900/80 px-6 text-white">
@@ -230,13 +263,13 @@ export default function BoardingPass({
 
           <div className="mt-auto flex flex-col items-center">
             <div className="flex h-10 w-full justify-between gap-[1px]">
-              {Array.from({ length: 40 }).map((_, i) => (
+              {barcodeRows.map((bar) => (
                 <div
-                  key={`barcode-${i}`}
+                  key={bar.key}
                   className="flex-grow bg-slate-100/80"
                   style={{
-                    width: `${Math.random() > 0.5 ? "2px" : "1px"}`,
-                    opacity: Math.random() > 0.2 ? 1 : 0.3,
+                    width: bar.width,
+                    opacity: bar.opacity,
                   }}
                 />
               ))}
