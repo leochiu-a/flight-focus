@@ -354,53 +354,7 @@ export default function FlightScreen() {
                     </p>
                   </div>
 
-                  <div className="grid gap-6 lg:grid-cols-[1.05fr_1.95fr]">
-                    <div className="relative rounded-3xl border border-white/10 bg-black/30 p-6">
-                      <div className="flex items-center justify-between text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                        <span>Counter</span>
-                        <span>Agent 07</span>
-                      </div>
-                      <div className="mt-5 flex items-baseline gap-3">
-                        <span className="text-5xl font-semibold tracking-[0.2em] text-[#8ab9ff]">
-                          07
-                        </span>
-                        <span className="text-xs uppercase tracking-[0.4em] text-slate-300">
-                          Open
-                        </span>
-                      </div>
-                      <div className="mt-6 grid grid-cols-2 gap-4 text-[11px] uppercase tracking-[0.3em] text-slate-400">
-                        <div>
-                          <p className="text-slate-500">Queue</p>
-                          <p className="mt-2 text-lg font-semibold text-slate-100">
-                            03
-                          </p>
-                        </div>
-                        <div className="text-right">
-                          <p className="text-slate-500">Wait</p>
-                          <p className="mt-2 text-lg font-semibold text-slate-100">
-                            02 min
-                          </p>
-                        </div>
-                      </div>
-                      <div className="mt-6 rounded-2xl border border-dashed border-white/15 px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                          Check-in Counter
-                        </p>
-                        <p className="mt-2 text-xs text-slate-300">
-                          Counter A07 · Terminal 1
-                        </p>
-                      </div>
-                      <div className="mt-6 rounded-2xl border border-dashed border-white/15 px-4 py-3">
-                        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                          Notice
-                        </p>
-                        <p className="mt-2 text-xs text-slate-300">
-                          Tickets are issued by destination. Select a route to
-                          begin boarding.
-                        </p>
-                      </div>
-                    </div>
-
+                  <div className="flex flex-col gap-6">
                     <div className="rounded-3xl border border-white/10 bg-black/25">
                       <div className="border-b border-white/10 px-5 py-4">
                         <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
