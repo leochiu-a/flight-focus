@@ -102,6 +102,35 @@ export default function FlightScreen() {
       ),
     [selectedRegion]
   );
+  const flightTierGroups = useMemo(() => {
+    // The list is sorted by distance, and focus duration is derived from distance buckets.
+    // Grouping by focus-duration makes the tier "steps" visually obvious without changing the data model.
+    const groups: Array<{
+      durationSeconds: number;
+      flights: Flight[];
+      minDistanceKm: number;
+      maxDistanceKm: number;
+    }> = [];
+
+    for (const flight of flights) {
+      const last = groups.at(-1);
+      if (!last || last.durationSeconds !== flight.durationSeconds) {
+        groups.push({
+          durationSeconds: flight.durationSeconds,
+          flights: [flight],
+          minDistanceKm: flight.distanceKm,
+          maxDistanceKm: flight.distanceKm,
+        });
+        continue;
+      }
+
+      last.flights.push(flight);
+      last.minDistanceKm = Math.min(last.minDistanceKm, flight.distanceKm);
+      last.maxDistanceKm = Math.max(last.maxDistanceKm, flight.distanceKm);
+    }
+
+    return groups;
+  }, [flights]);
   const regionRanges = useMemo(() => {
     const ranges = new Map<string, ReturnType<typeof buildRegionFocusRange>>();
     for (const region of REGIONS) {
@@ -119,31 +148,36 @@ export default function FlightScreen() {
 
   useEffect(() => {
     if (isComplete && flightState === "in_flight") {
-      setFlightState("completed");
+      const timer = window.setTimeout(() => setFlightState("completed"), 0);
+      return () => window.clearTimeout(timer);
     }
   }, [isComplete, flightState]);
 
   useEffect(() => {
     if (!flights.length) {
-      setSelectedFlight(null);
-      return;
+      const timer = window.setTimeout(() => setSelectedFlight(null), 0);
+      return () => window.clearTimeout(timer);
     }
 
     if (!selectedFlight) {
-      setSelectedFlight(flights[0]);
-      return;
+      const timer = window.setTimeout(() => setSelectedFlight(flights[0]), 0);
+      return () => window.clearTimeout(timer);
     }
 
     const hasFlight = flights.some((flight) => flight.code === selectedFlight.code);
     if (!hasFlight) {
-      setSelectedFlight(flights[0]);
-      setFlightState("select");
+      const timer = window.setTimeout(() => {
+        setSelectedFlight(flights[0]);
+        setFlightState("select");
+      }, 0);
+      return () => window.clearTimeout(timer);
     }
   }, [flights, selectedFlight]);
 
   useEffect(() => {
     if (!selectedFlight && flightState !== "select") {
-      setFlightState("select");
+      const timer = window.setTimeout(() => setFlightState("select"), 0);
+      return () => window.clearTimeout(timer);
     }
   }, [selectedFlight, flightState]);
 
@@ -164,12 +198,6 @@ export default function FlightScreen() {
   const handleReset = () => {
     setFlightState("select");
   };
-
-  const etaLabel = useMemo(() => {
-    if (!selectedFlight) return formatTime(0);
-    if (flightState === "in_flight") return formatTime(remainingSeconds);
-    return formatTime(selectedFlight.durationSeconds);
-  }, [flightState, remainingSeconds, selectedFlight]);
 
   const remainingDistanceKm = useMemo(() => {
     if (!selectedFlight) return 0;
@@ -365,7 +393,7 @@ export default function FlightScreen() {
                         <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
                           Destination Region
                         </p>
-                        <div className="mt-3 flex flex-wrap gap-2">
+                        <div className="mt-3 flex flex-wrap gap-3">
                           {REGIONS.map((region) => {
                             const range = regionRanges.get(region.id);
                             const rangeLabel = range
@@ -374,15 +402,26 @@ export default function FlightScreen() {
                             return (
                               <button
                                 key={region.id}
-                                className={`rounded-full border px-4 py-2 text-[10px] uppercase tracking-[0.35em] transition ${
+                                className={`rounded-2xl border px-5 py-3 text-left transition ${
                                   selectedRegion === region.id
                                     ? "border-[#8ab9ff] bg-[#8ab9ff] text-[#05070d]"
-                                    : "border-white/15 text-slate-300 hover:border-white/40 hover:text-white"
+                                    : "border-white/15 bg-white/5 text-slate-200 hover:border-white/40 hover:bg-white/10 hover:text-white"
                                 }`}
                                 type="button"
                                 onClick={() => setSelectedRegion(region.id)}
                               >
-                                {region.name} · {rangeLabel}
+                                <span className="block text-[11px] font-semibold uppercase tracking-[0.35em]">
+                                  {region.name}
+                                </span>
+                                <span
+                                  className={`mt-1 block text-[10px] uppercase tracking-[0.35em] ${
+                                    selectedRegion === region.id
+                                      ? "text-[#05070d]/80"
+                                      : "text-slate-400"
+                                  }`}
+                                >
+                                  Focus {rangeLabel}
+                                </span>
                               </button>
                             );
                           })}
@@ -403,62 +442,82 @@ export default function FlightScreen() {
                       ) : (
                         <ScrollArea className="h-[420px]">
                           <div className="divide-y divide-white/10">
-                            {flights.map((flight) => (
-                              <button
-                                key={flight.code}
-                                className="group grid w-full grid-cols-[1.1fr_1.1fr_0.8fr_0.8fr_0.9fr_0.6fr] items-center gap-3 px-5 py-4 text-left transition hover:bg-white/5"
-                                type="button"
-                                onClick={() => handleSelect(flight)}
-                              >
-                                <div>
-                                  <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                    Code
-                                  </p>
-                                  <p className="mt-1 font-mono text-sm uppercase tracking-[0.35em] text-slate-100">
-                                    {flight.code}
-                                  </p>
+                            {flightTierGroups.map((group) => (
+                              <div key={`tier-${group.durationSeconds}`}>
+                                <div className="sticky top-0 z-10 border-b border-white/10 bg-black/45 px-5 py-3 backdrop-blur">
+                                  <div className="flex items-center justify-between">
+                                    <p className="text-[10px] uppercase tracking-[0.45em] text-slate-200">
+                                      Focus Session ·{" "}
+                                      <span className="font-semibold text-[#8ab9ff]">
+                                        {formatTime(group.durationSeconds)}
+                                      </span>
+                                    </p>
+                                    <p className="text-[10px] uppercase tracking-[0.45em] text-slate-400">
+                                      {group.flights.length} routes ·{" "}
+                                      {group.minDistanceKm === group.maxDistanceKm
+                                        ? `${group.minDistanceKm} km`
+                                        : `${group.minDistanceKm}-${group.maxDistanceKm} km`}
+                                    </p>
+                                  </div>
                                 </div>
-                                <div>
-                                  <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                    Route
-                                  </p>
-                                  <p className="mt-1 text-lg font-semibold tracking-[0.2em] text-slate-100">
-                                    {flight.origin} → {flight.destination}
-                                  </p>
-                                  <p className="mt-1 text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                                    From {originCity.name}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                    Session
-                                  </p>
-                                  <p className="mt-1 text-base font-semibold text-[#8ab9ff]">
-                                    {formatTime(flight.durationSeconds)}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                    Distance
-                                  </p>
-                                  <p className="mt-1 text-base font-semibold text-slate-100">
-                                    {flight.distanceKm} km
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                    Status
-                                  </p>
-                                  <p className="mt-1 text-xs uppercase tracking-[0.4em] text-slate-300">
-                                    Boarding
-                                  </p>
-                                </div>
-                                <div className="text-right">
-                                  <span className="inline-flex items-center text-[10px] uppercase tracking-[0.4em] text-[#8ab9ff] transition group-hover:translate-x-1">
-                                    Issue
-                                  </span>
-                                </div>
-                              </button>
+                                {group.flights.map((flight) => (
+                                  <button
+                                    key={flight.code}
+                                    className="group grid w-full grid-cols-[1.1fr_1.1fr_0.8fr_0.8fr_0.9fr_0.6fr] items-center gap-3 px-5 py-4 text-left transition hover:bg-white/5"
+                                    type="button"
+                                    onClick={() => handleSelect(flight)}
+                                  >
+                                    <div>
+                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
+                                        Code
+                                      </p>
+                                      <p className="mt-1 font-mono text-sm uppercase tracking-[0.35em] text-slate-100">
+                                        {flight.code}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
+                                        Route
+                                      </p>
+                                      <p className="mt-1 text-lg font-semibold tracking-[0.2em] text-slate-100">
+                                        {flight.origin} → {flight.destination}
+                                      </p>
+                                      <p className="mt-1 text-[10px] uppercase tracking-[0.4em] text-slate-400">
+                                        From {originCity.name}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
+                                        Session
+                                      </p>
+                                      <p className="mt-1 text-base font-semibold text-[#8ab9ff]">
+                                        {formatTime(flight.durationSeconds)}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
+                                        Distance
+                                      </p>
+                                      <p className="mt-1 text-base font-semibold text-slate-100">
+                                        {flight.distanceKm} km
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
+                                        Status
+                                      </p>
+                                      <p className="mt-1 text-xs uppercase tracking-[0.4em] text-slate-300">
+                                        Boarding
+                                      </p>
+                                    </div>
+                                    <div className="text-right">
+                                      <span className="inline-flex items-center text-[10px] uppercase tracking-[0.4em] text-[#8ab9ff] transition group-hover:translate-x-1">
+                                        Issue
+                                      </span>
+                                    </div>
+                                  </button>
+                                ))}
+                              </div>
                             ))}
                           </div>
                         </ScrollArea>
