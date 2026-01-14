@@ -165,7 +165,10 @@ export default function FlightScreen() {
       return;
     }
 
-    if (flightState !== routeState) {
+    if (
+      (flightState === "select" || flightState === "checkin") &&
+      flightState !== routeState
+    ) {
       setFlightState(routeState);
     }
   }, [flightState, routeState]);
