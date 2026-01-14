@@ -88,12 +88,7 @@ const buildRegionFocusRange = (flights: Flight[]) => {
 export default function FlightScreen() {
   const router = useRouter();
   const pathname = usePathname();
-  const routeState =
-    pathname === "/flight"
-      ? "in_flight"
-      : pathname === "/checkin"
-        ? "checkin"
-        : "select";
+  const routeState = pathname === "/flight" ? "checkin" : "select";
   const [flightState, setFlightState] = useState<
     "select" | "checkin" | "in_flight" | "completed" | "cancelled"
   >("select");
@@ -158,18 +153,13 @@ export default function FlightScreen() {
   );
 
   useEffect(() => {
-    if (routeState === "in_flight") {
-      if (flightState === "select" || flightState === "checkin") {
-        setFlightState("in_flight");
-      }
+    if (routeState === "select" && flightState !== "select") {
+      setFlightState("select");
       return;
     }
 
-    if (
-      (flightState === "select" || flightState === "checkin") &&
-      flightState !== routeState
-    ) {
-      setFlightState(routeState);
+    if (routeState === "checkin" && flightState === "select") {
+      setFlightState("checkin");
     }
   }, [flightState, routeState]);
 
@@ -223,7 +213,7 @@ export default function FlightScreen() {
   const handleSelect = (flight: Flight) => {
     setSelectedFlight(flight);
     setFlightState("checkin");
-    router.push("/checkin");
+    router.push("/flight");
   };
 
   const handleReset = () => {
@@ -242,23 +232,36 @@ export default function FlightScreen() {
 
   return (
     <div className="relative min-h-screen text-[var(--foreground)]">
+      {selectedFlight && flightState !== "select" && (
+        <div
+          className={`absolute inset-0 transition-[opacity,filter] duration-700 ${
+            flightState === "checkin"
+              ? "opacity-65 blur-[2px]"
+              : "opacity-100 blur-0"
+          }`}
+        >
+          <FlightMap
+            progress={progress}
+            zoom={zoom}
+            fitToBoundsSignal={fitToBoundsSignal}
+            cameraMode={flightState === "checkin" ? "fit" : cameraMode}
+            origin={selectedFlight.originCoord}
+            destination={selectedFlight.destinationCoord}
+            originLabel={selectedFlight.origin}
+            destinationLabel={selectedDestinationName ?? "Destination"}
+          />
+          <div
+            className={`pointer-events-none absolute inset-0 transition-opacity duration-700 ${
+              flightState === "checkin" ? "bg-black/45" : "bg-black/0"
+            }`}
+          />
+        </div>
+      )}
       {flightState === "in_flight" ||
       flightState === "completed" ||
       flightState === "cancelled" ? (
         selectedFlight ? (
-          <>
-            <div className="absolute inset-0">
-              <FlightMap
-                progress={progress}
-                zoom={zoom}
-                fitToBoundsSignal={fitToBoundsSignal}
-                cameraMode={cameraMode}
-                origin={selectedFlight.originCoord}
-                destination={selectedFlight.destinationCoord}
-                originLabel={selectedFlight.origin}
-                destinationLabel={selectedDestinationName ?? "Destination"}
-              />
-            </div>
+          <div className="relative z-10">
             {(flightState === "completed" || flightState === "cancelled") && (
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-center">
                 <div className="rounded-full border border-white/20 bg-black/40 px-8 py-4 backdrop-blur">
@@ -351,7 +354,7 @@ export default function FlightScreen() {
                 </div>
               </div>
             </header>
-          </>
+          </div>
         ) : (
           <div className="ife-shell w-full rounded-[32px] px-8 py-10">
             <p className="text-sm text-slate-300">
@@ -487,41 +490,43 @@ export default function FlightScreen() {
               </div>
             )}
             {flightState === "checkin" && selectedFlight && (
-              <div className="flex flex-col items-center gap-8">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
-                    Check-in
-                  </p>
-                  <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
-                    {selectedFlight.origin} → {selectedDestinationName}
-                  </h2>
-                  <p className="mt-3 text-sm text-slate-300">
-                    Boarding pass ready. Your focus flight lasts{" "}
-                    {formatTime(selectedFlight.durationSeconds)}.
-                  </p>
-                  <div className="mt-4 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.35em] text-slate-400">
-                    <span className="rounded-full border border-white/10 px-3 py-1">
-                      班次 {selectedFlight.code}
-                    </span>
-                    <span className="rounded-full border border-white/10 px-3 py-1">
-                      Check-in Counter A07
-                    </span>
+              <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black/30 p-8">
+                <div className="relative z-10 flex flex-col items-center gap-8">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
+                      Check-in
+                    </p>
+                    <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
+                      {selectedFlight.origin} → {selectedDestinationName}
+                    </h2>
+                    <p className="mt-3 text-sm text-slate-300">
+                      Boarding pass ready. Your focus flight lasts{" "}
+                      {formatTime(selectedFlight.durationSeconds)}.
+                    </p>
+                    <div className="mt-4 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.35em] text-slate-400">
+                      <span className="rounded-full border border-white/10 px-3 py-1">
+                        班次 {selectedFlight.code}
+                      </span>
+                      <span className="rounded-full border border-white/10 px-3 py-1">
+                        Check-in Counter A07
+                      </span>
+                    </div>
                   </div>
+                  <BoardingPass
+                    origin={selectedFlight.origin}
+                    destination={selectedFlight.destination}
+                    durationSeconds={selectedFlight.durationSeconds}
+                    passengerName={passengerName}
+                    onTear={handleStart}
+                  />
+                  <button
+                    className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
+                    type="button"
+                    onClick={handleReset}
+                  >
+                    Back to Routes
+                  </button>
                 </div>
-                <BoardingPass
-                  origin={selectedFlight.origin}
-                  destination={selectedFlight.destination}
-                  durationSeconds={selectedFlight.durationSeconds}
-                  passengerName={passengerName}
-                  onTear={handleStart}
-                />
-                <button
-                  className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
-                  type="button"
-                  onClick={handleReset}
-                >
-                  Back to Routes
-                </button>
               </div>
             )}
           </div>
