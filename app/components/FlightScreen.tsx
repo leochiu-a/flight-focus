@@ -239,6 +239,9 @@ export default function FlightScreen() {
   const selectedDestinationName =
     selectedFlight?.destination &&
     (CITY_BY_IATA.get(selectedFlight.destination) ?? selectedFlight.destination);
+  const selectedOriginName =
+    selectedFlight?.origin &&
+    (CITY_BY_IATA.get(selectedFlight.origin) ?? selectedFlight.origin);
 
   return (
     <div className="relative min-h-screen text-[var(--foreground)]">
@@ -293,7 +296,7 @@ export default function FlightScreen() {
                 </p>
                 <div className="mt-1 flex items-baseline gap-3">
                   <h1 className="text-2xl font-semibold tracking-[0.18em] text-slate-100">
-                    {selectedFlight.origin} -&gt; {selectedDestinationName}
+                    {selectedOriginName} -&gt; {selectedDestinationName}
                   </h1>
                 </div>
               </div>
@@ -535,7 +538,7 @@ export default function FlightScreen() {
                   Check-in
                 </p>
                 <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
-                  {selectedFlight.origin} → {selectedDestinationName}
+                  {selectedOriginName} → {selectedDestinationName}
                 </h2>
                 <p className="mt-3 text-sm text-slate-300">
                   Boarding pass ready. Your focus flight lasts{" "}
