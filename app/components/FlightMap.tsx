@@ -220,9 +220,10 @@ export default function FlightMap({
     bounds.extend(routeData.origin);
     bounds.extend(routeData.destination);
     map.fitBounds(bounds, {
-      padding: 80,
+      padding: 72,
       duration: 800,
       bearing: 0,
+      maxZoom: 6.2,
     });
     map.setBearing(0);
     map.setPitch(0);
