@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { Square, Volume2, VolumeX } from "lucide-react";
 import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
@@ -97,15 +97,26 @@ const buildRegionFocusRange = (flights: Flight[]) => {
 export default function FlightScreen() {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
   const routeState = pathname === "/flight" ? "checkin" : "select";
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const selectedFlightCode = searchParams.get("flight");
+  const flightFromQuery = useMemo(
+    () =>
+      selectedFlightCode
+        ? ALL_FLIGHTS.find((flight) => flight.code === selectedFlightCode) ?? null
+        : null,
+    [selectedFlightCode]
+  );
   const [flightState, setFlightState] = useState<
     "select" | "checkin" | "in_flight" | "completed" | "cancelled"
   >("select");
   const [musicEnabled, setMusicEnabled] = useState(true);
-  const [selectedRegion, setSelectedRegion] = useState(DEFAULT_REGION_ID);
+  const [selectedRegion, setSelectedRegion] = useState(
+    flightFromQuery?.regionId ?? DEFAULT_REGION_ID
+  );
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(
-    DEFAULT_REGION_FLIGHTS[0] ?? ALL_FLIGHTS[0] ?? null
+    flightFromQuery ?? DEFAULT_REGION_FLIGHTS[0] ?? ALL_FLIGHTS[0] ?? null
   );
   const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [zoom, setZoom] = useState(8);
@@ -174,6 +185,13 @@ export default function FlightScreen() {
       setFlightState("checkin");
     }
   }, [flightState, routeState]);
+
+  useEffect(() => {
+    if (!flightFromQuery) return;
+
+    setSelectedRegion(flightFromQuery.regionId);
+    setSelectedFlight(flightFromQuery);
+  }, [flightFromQuery]);
 
   useEffect(() => {
     if (!audioRef.current) {
@@ -256,7 +274,7 @@ export default function FlightScreen() {
   const handleSelect = (flight: Flight) => {
     setSelectedFlight(flight);
     setFlightState("checkin");
-    router.push("/flight");
+    router.push(`/flight?flight=${flight.code}`);
   };
 
   const handleReset = () => {
