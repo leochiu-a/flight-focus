@@ -20,7 +20,15 @@ export const estimateFlightMinutes = (
   taxiMinutes = DEFAULT_TAXI_MINUTES
 ) => Math.round((distanceKm / cruiseKmh) * 60 + taxiMinutes);
 
-export const mapToFocusMinutes = (flightMinutes: number) => {
+export const mapToFocusMinutes = (
+  flightMinutes: number,
+  distanceKm?: number
+) => {
+  if (distanceKm !== undefined) {
+    const buckets = Math.max(0, Math.floor(distanceKm / 1000));
+    return 15 + buckets * 5;
+  }
+
   const flightHours = flightMinutes / 60;
   const bucket = POMODORO_BUCKETS.find(
     (entry) => flightHours <= entry.maxFlightHours

@@ -34,6 +34,7 @@ type Flight = {
 const CITIES = citiesData as City[];
 const ORIGIN_CITY_ID = "tpe";
 const originCity = CITIES.find((city) => city.id === ORIGIN_CITY_ID) ?? CITIES[0];
+const CITY_BY_IATA = new Map(CITIES.map((city) => [city.iata, city.name]));
 
 const toCoord = (city: City) => [city.lon, city.lat] as const;
 
@@ -46,6 +47,7 @@ const REGIONS = [
 ] as const;
 
 const DEFAULT_REGION_ID = REGIONS[0]?.id ?? "asia";
+const AIRLINE_NAME = "Focus Air";
 
 const ALL_FLIGHTS: Flight[] = CITIES.filter((city) => city.id !== originCity.id)
   .map((destination) => {
@@ -63,7 +65,7 @@ const ALL_FLIGHTS: Flight[] = CITIES.filter((city) => city.id !== originCity.id)
       originCoord,
       destinationCoord,
       distanceKm,
-      durationSeconds: mapToFocusMinutes(flightMinutes) * 60,
+      durationSeconds: mapToFocusMinutes(flightMinutes, distanceKm) * 60,
       regionId: destination.regionId,
     };
   })
@@ -204,6 +206,9 @@ export default function FlightScreen() {
     if (flightState !== "in_flight") return selectedFlight.distanceKm;
     return Math.max(Math.round(selectedFlight.distanceKm * (1 - progress)), 0);
   }, [flightState, progress, selectedFlight]);
+  const selectedDestinationName =
+    selectedFlight?.destination &&
+    (CITY_BY_IATA.get(selectedFlight.destination) ?? selectedFlight.destination);
 
   return (
     <div className="relative min-h-screen text-[var(--foreground)]">
@@ -221,7 +226,7 @@ export default function FlightScreen() {
                 origin={selectedFlight.originCoord}
                 destination={selectedFlight.destinationCoord}
                 originLabel={selectedFlight.origin}
-                destinationLabel={selectedFlight.destination}
+                destinationLabel={selectedDestinationName ?? "Destination"}
               />
             </div>
             {(flightState === "completed" || flightState === "cancelled") && (
@@ -245,7 +250,7 @@ export default function FlightScreen() {
                 </p>
                 <div className="mt-1 flex items-baseline gap-3">
                   <h1 className="text-2xl font-semibold tracking-[0.18em] text-slate-100">
-                    {selectedFlight.origin} -&gt; {selectedFlight.destination}
+                    {selectedFlight.origin} -&gt; {selectedDestinationName}
                   </h1>
                 </div>
               </div>
@@ -379,6 +384,14 @@ export default function FlightScreen() {
                       </div>
                       <div className="mt-6 rounded-2xl border border-dashed border-white/15 px-4 py-3">
                         <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
+                          Check-in Counter
+                        </p>
+                        <p className="mt-2 text-xs text-slate-300">
+                          Counter A07 · Terminal 1
+                        </p>
+                      </div>
+                      <div className="mt-6 rounded-2xl border border-dashed border-white/15 px-4 py-3">
+                        <p className="text-[10px] uppercase tracking-[0.4em] text-slate-400">
                           Notice
                         </p>
                         <p className="mt-2 text-xs text-slate-300">
@@ -427,13 +440,11 @@ export default function FlightScreen() {
                           })}
                         </div>
                       </div>
-                      <div className="grid grid-cols-[1.1fr_1.1fr_0.8fr_0.8fr_0.9fr_0.6fr] gap-3 border-b border-white/10 px-5 py-3 text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                        <span>Flight</span>
-                        <span>Destination</span>
+                      <div className="grid grid-cols-[0.8fr_1.4fr_1fr_0.8fr] gap-3 border-b border-white/10 px-5 py-3 text-[10px] uppercase tracking-[0.4em] text-slate-400">
                         <span>Duration</span>
+                        <span>Destination</span>
+                        <span>Flight</span>
                         <span>Distance</span>
-                        <span>Status</span>
-                        <span className="text-right">Select</span>
                       </div>
                       {flights.length === 0 ? (
                         <div className="px-5 py-8 text-sm text-slate-300">
@@ -444,76 +455,36 @@ export default function FlightScreen() {
                           <div className="divide-y divide-white/10">
                             {flightTierGroups.map((group) => (
                               <div key={`tier-${group.durationSeconds}`}>
-                                <div className="sticky top-0 z-10 border-b border-white/10 bg-black/45 px-5 py-3 backdrop-blur">
-                                  <div className="flex items-center justify-between">
-                                    <p className="text-[10px] uppercase tracking-[0.45em] text-slate-200">
-                                      Focus Session ·{" "}
-                                      <span className="font-semibold text-[#8ab9ff]">
-                                        {formatTime(group.durationSeconds)}
-                                      </span>
-                                    </p>
-                                    <p className="text-[10px] uppercase tracking-[0.45em] text-slate-400">
-                                      {group.flights.length} routes ·{" "}
-                                      {group.minDistanceKm === group.maxDistanceKm
-                                        ? `${group.minDistanceKm} km`
-                                        : `${group.minDistanceKm}-${group.maxDistanceKm} km`}
-                                    </p>
-                                  </div>
-                                </div>
                                 {group.flights.map((flight) => (
                                   <button
                                     key={flight.code}
-                                    className="group grid w-full grid-cols-[1.1fr_1.1fr_0.8fr_0.8fr_0.9fr_0.6fr] items-center gap-3 px-5 py-4 text-left transition hover:bg-white/5"
+                                    className="group grid w-full grid-cols-[0.8fr_1.4fr_1fr_0.8fr] items-center gap-3 px-5 py-4 text-left transition hover:bg-white/5"
                                     type="button"
                                     onClick={() => handleSelect(flight)}
                                   >
                                     <div>
-                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                        Code
+                                      <p className="mt-1 text-base font-semibold text-[#8ab9ff]">
+                                        {formatTime(flight.durationSeconds)}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="mt-1 text-lg font-semibold tracking-[0.2em] text-slate-100">
+                                        {CITY_BY_IATA.get(flight.destination) ??
+                                          flight.destination}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="mt-1 text-xs uppercase tracking-[0.35em] text-slate-400">
+                                        {AIRLINE_NAME}
                                       </p>
                                       <p className="mt-1 font-mono text-sm uppercase tracking-[0.35em] text-slate-100">
                                         {flight.code}
                                       </p>
                                     </div>
                                     <div>
-                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                        Route
-                                      </p>
-                                      <p className="mt-1 text-lg font-semibold tracking-[0.2em] text-slate-100">
-                                        {flight.origin} → {flight.destination}
-                                      </p>
-                                      <p className="mt-1 text-[10px] uppercase tracking-[0.4em] text-slate-400">
-                                        From {originCity.name}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                        Session
-                                      </p>
-                                      <p className="mt-1 text-base font-semibold text-[#8ab9ff]">
-                                        {formatTime(flight.durationSeconds)}
-                                      </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                        Distance
-                                      </p>
                                       <p className="mt-1 text-base font-semibold text-slate-100">
                                         {flight.distanceKm} km
                                       </p>
-                                    </div>
-                                    <div>
-                                      <p className="text-[10px] uppercase tracking-[0.4em] text-slate-500">
-                                        Status
-                                      </p>
-                                      <p className="mt-1 text-xs uppercase tracking-[0.4em] text-slate-300">
-                                        Boarding
-                                      </p>
-                                    </div>
-                                    <div className="text-right">
-                                      <span className="inline-flex items-center text-[10px] uppercase tracking-[0.4em] text-[#8ab9ff] transition group-hover:translate-x-1">
-                                        Issue
-                                      </span>
                                     </div>
                                   </button>
                                 ))}
@@ -538,12 +509,20 @@ export default function FlightScreen() {
                     Check-in
                   </p>
                   <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
-                    {selectedFlight.origin} → {selectedFlight.destination}
+                    {selectedFlight.origin} → {selectedDestinationName}
                   </h2>
                   <p className="mt-3 text-sm text-slate-300">
                     Boarding pass ready. Your focus flight lasts{" "}
                     {formatTime(selectedFlight.durationSeconds)}.
                   </p>
+                  <div className="mt-4 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.35em] text-slate-400">
+                    <span className="rounded-full border border-white/10 px-3 py-1">
+                      班次 {selectedFlight.code}
+                    </span>
+                    <span className="rounded-full border border-white/10 px-3 py-1">
+                      Check-in Counter A07
+                    </span>
+                  </div>
                 </div>
                 <BoardingPass
                   origin={selectedFlight.origin}

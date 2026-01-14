@@ -3,6 +3,7 @@
   { "id": "hnd", "name": "Tokyo", "iata": "HND", "lat": 35.5494, "lon": 139.7798, "tz": "Asia/Tokyo", "regionId": "asia" },
   { "id": "icn", "name": "Seoul", "iata": "ICN", "lat": 37.4602, "lon": 126.4407, "tz": "Asia/Seoul", "regionId": "asia" },
   { "id": "hkg", "name": "Hong Kong", "iata": "HKG", "lat": 22.308, "lon": 113.9185, "tz": "Asia/Hong_Kong", "regionId": "asia" },
+  { "id": "han", "name": "Hanoi", "iata": "HAN", "lat": 21.2142, "lon": 105.8042, "tz": "Asia/Bangkok", "regionId": "asia" },
   { "id": "sin", "name": "Singapore", "iata": "SIN", "lat": 1.3644, "lon": 103.9915, "tz": "Asia/Singapore", "regionId": "asia" },
   { "id": "bkk", "name": "Bangkok", "iata": "BKK", "lat": 13.69, "lon": 100.7501, "tz": "Asia/Bangkok", "regionId": "asia" },
   { "id": "kul", "name": "Kuala Lumpur", "iata": "KUL", "lat": 2.7456, "lon": 101.709, "tz": "Asia/Kuala_Lumpur", "regionId": "asia" },
