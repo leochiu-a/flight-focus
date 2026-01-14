@@ -181,7 +181,6 @@ export default function FlightMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!map || !loadedRef.current) return;
-    if (cameraMode !== "follow") return;
 
     const { position, heading, segmentIndex } = interpolateRoute(
       routeData.path,
@@ -197,6 +196,8 @@ export default function FlightMap({
     completeSourceRef.current?.setData(buildLineString(completed));
     remainingSourceRef.current?.setData(buildLineString(remaining));
     planeMarkerRef.current?.setLngLat(position).setRotation(heading);
+
+    if (cameraMode !== "follow") return;
 
     const now = performance.now();
     if (now - lastCameraUpdateRef.current > 400) {
