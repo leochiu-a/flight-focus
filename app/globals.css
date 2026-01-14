@@ -94,6 +94,20 @@ body {
   font-family: var(--font-sans), "Segoe UI", sans-serif;
 }
 
+/* Fixed backdrop keeps overscroll bounce from showing white in some browsers. */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    circle at top,
+    #101728 0%,
+    #05070d 65%,
+    #03050a 100%
+  );
+}
+
 .ife-shell {
   background: linear-gradient(180deg, rgba(5, 7, 13, 0.85), rgba(5, 7, 13, 0.65));
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
