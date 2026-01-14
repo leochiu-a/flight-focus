@@ -1,12 +1,5 @@
-"use client";
-
-import dynamic from "next/dynamic";
-
-// Map rendering is client-only; avoid SSR hydration mismatch for this screen.
-const FlightScreen = dynamic(() => import("./components/FlightScreen"), {
-  ssr: false,
-});
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <FlightScreen />;
+  redirect("/select");
 }

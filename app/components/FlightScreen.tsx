@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -85,6 +86,14 @@ const buildRegionFocusRange = (flights: Flight[]) => {
 };
 
 export default function FlightScreen() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const routeState =
+    pathname === "/flight"
+      ? "in_flight"
+      : pathname === "/checkin"
+        ? "checkin"
+        : "select";
   const [flightState, setFlightState] = useState<
     "select" | "checkin" | "in_flight" | "completed" | "cancelled"
   >("select");
@@ -149,6 +158,19 @@ export default function FlightScreen() {
   );
 
   useEffect(() => {
+    if (routeState === "in_flight") {
+      if (flightState === "select" || flightState === "checkin") {
+        setFlightState("in_flight");
+      }
+      return;
+    }
+
+    if (flightState !== routeState) {
+      setFlightState(routeState);
+    }
+  }, [flightState, routeState]);
+
+  useEffect(() => {
     if (isComplete && flightState === "in_flight") {
       const timer = window.setTimeout(() => setFlightState("completed"), 0);
       return () => window.clearTimeout(timer);
@@ -171,21 +193,24 @@ export default function FlightScreen() {
       const timer = window.setTimeout(() => {
         setSelectedFlight(flights[0]);
         setFlightState("select");
+        router.replace("/select");
       }, 0);
       return () => window.clearTimeout(timer);
     }
-  }, [flights, selectedFlight]);
+  }, [flights, selectedFlight, router]);
 
   useEffect(() => {
     if (!selectedFlight && flightState !== "select") {
       const timer = window.setTimeout(() => setFlightState("select"), 0);
+      router.replace("/select");
       return () => window.clearTimeout(timer);
     }
-  }, [selectedFlight, flightState]);
+  }, [selectedFlight, flightState, router]);
 
   const handleStart = () => {
     reset();
     setFlightState("in_flight");
+    router.push("/flight");
   };
 
   const handleCancel = () => {
@@ -195,10 +220,12 @@ export default function FlightScreen() {
   const handleSelect = (flight: Flight) => {
     setSelectedFlight(flight);
     setFlightState("checkin");
+    router.push("/checkin");
   };
 
   const handleReset = () => {
     setFlightState("select");
+    router.push("/select");
   };
 
   const remainingDistanceKm = useMemo(() => {
