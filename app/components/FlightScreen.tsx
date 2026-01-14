@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { Volume2, VolumeX } from "lucide-react";
+import { Square, Volume2, VolumeX } from "lucide-react";
 import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -395,10 +395,11 @@ export default function FlightScreen() {
                 <div className="flex items-center gap-3">
                   {flightState === "in_flight" ? (
                     <button
-                      className="rounded-full border border-transparent px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-slate-400 transition hover:text-slate-200"
+                      className="flex items-center gap-2 rounded-full border border-transparent px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-slate-400 transition hover:text-slate-200"
                       type="button"
                       onClick={() => setShowCancelDialog(true)}
                     >
+                      <Square className="h-3 w-3" />
                       End Flight
                     </button>
                   ) : (
