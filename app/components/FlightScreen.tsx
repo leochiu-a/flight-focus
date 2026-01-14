@@ -5,6 +5,14 @@ import { usePathname, useRouter } from "next/navigation";
 import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useFlightTimer } from "../hooks/useFlightTimer";
 import { formatTime } from "../lib/time";
 import { haversineDistance } from "../lib/flight";
@@ -96,6 +104,7 @@ export default function FlightScreen() {
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(
     DEFAULT_REGION_FLIGHTS[0] ?? ALL_FLIGHTS[0] ?? null
   );
+  const [showCancelDialog, setShowCancelDialog] = useState(false);
   const [zoom, setZoom] = useState(8);
   const [cameraMode, setCameraMode] = useState<"follow" | "fit">("follow");
   const [fitToBoundsSignal, setFitToBoundsSignal] = useState(0);
@@ -208,6 +217,7 @@ export default function FlightScreen() {
 
   const handleCancel = () => {
     setFlightState("cancelled");
+    setShowCancelDialog(false);
   };
 
   const handleSelect = (flight: Flight) => {
@@ -338,7 +348,7 @@ export default function FlightScreen() {
                     <button
                       className="rounded-full border border-transparent px-4 py-2 text-[10px] uppercase tracking-[0.35em] text-slate-400 transition hover:text-slate-200"
                       type="button"
-                      onClick={handleCancel}
+                      onClick={() => setShowCancelDialog(true)}
                     >
                       End Flight
                     </button>
@@ -354,6 +364,34 @@ export default function FlightScreen() {
                 </div>
               </div>
             </header>
+            <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
+              <DialogContent className="border-white/10 bg-slate-950/95 text-slate-100 shadow-[0_24px_80px_rgba(5,10,25,0.55)] backdrop-blur">
+                <DialogHeader>
+                  <DialogTitle className="tracking-[0.2em] uppercase">
+                    Cancel Flight
+                  </DialogTitle>
+                  <DialogDescription className="text-slate-300">
+                    Are you sure you want to end this focus flight early?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <button
+                    className="rounded-full border border-white/20 px-4 py-2 text-xs uppercase tracking-[0.35em] text-slate-200 transition hover:border-white/40"
+                    type="button"
+                    onClick={() => setShowCancelDialog(false)}
+                  >
+                    Keep Flying
+                  </button>
+                  <button
+                    className="rounded-full bg-[#8ab9ff] px-4 py-2 text-xs uppercase tracking-[0.35em] text-[#05070d] transition hover:bg-[#a6c8ff]"
+                    type="button"
+                    onClick={handleCancel}
+                  >
+                    End Flight
+                  </button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         ) : (
           <div className="ife-shell w-full rounded-[32px] px-8 py-10">
