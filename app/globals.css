@@ -160,11 +160,17 @@ body::before {
   display: flex;
   align-items: center;
   gap: 6px;
+  padding: 6px 10px 6px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(138, 185, 255, 0.35);
+  background: rgba(10, 14, 24, 0.7);
+  backdrop-filter: blur(6px);
   font-family: var(--font-mono), "Courier New", monospace;
   font-size: 11px;
   letter-spacing: 0.22em;
   color: #d7e4ff;
   text-transform: uppercase;
+  box-shadow: 0 10px 22px rgba(5, 8, 16, 0.45);
 }
 
 .airport-marker::before {
