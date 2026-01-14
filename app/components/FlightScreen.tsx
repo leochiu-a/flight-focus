@@ -364,8 +364,8 @@ export default function FlightScreen() {
         )
       ) : (
         <div className="relative min-h-screen">
-          <div className="ife-shell w-full rounded-[32px] px-8 py-10">
-            {flightState === "select" && (
+          {flightState === "select" && (
+            <div className="ife-shell w-full rounded-[32px] px-8 py-10">
               <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[radial-gradient(circle_at_top,_rgba(138,185,255,0.12),_transparent_55%),_linear-gradient(180deg,_rgba(5,7,13,0.85),_rgba(5,7,13,0.6))] p-8">
                 <div className="pointer-events-none absolute -right-24 -top-24 h-64 w-64 rounded-full bg-[#8ab9ff]/10 blur-3xl" />
                 <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/40 to-transparent" />
@@ -488,48 +488,39 @@ export default function FlightScreen() {
                   </div>
                 </div>
               </div>
-            )}
-            {flightState === "checkin" && selectedFlight && (
-              <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-black/30 p-8">
-                <div className="relative z-10 flex flex-col items-center gap-8">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
-                      Check-in
-                    </p>
-                    <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
-                      {selectedFlight.origin} → {selectedDestinationName}
-                    </h2>
-                    <p className="mt-3 text-sm text-slate-300">
-                      Boarding pass ready. Your focus flight lasts{" "}
-                      {formatTime(selectedFlight.durationSeconds)}.
-                    </p>
-                    <div className="mt-4 flex flex-wrap gap-3 text-[11px] uppercase tracking-[0.35em] text-slate-400">
-                      <span className="rounded-full border border-white/10 px-3 py-1">
-                        班次 {selectedFlight.code}
-                      </span>
-                      <span className="rounded-full border border-white/10 px-3 py-1">
-                        Check-in Counter A07
-                      </span>
-                    </div>
-                  </div>
-                  <BoardingPass
-                    origin={selectedFlight.origin}
-                    destination={selectedFlight.destination}
-                    durationSeconds={selectedFlight.durationSeconds}
-                    passengerName={passengerName}
-                    onTear={handleStart}
-                  />
-                  <button
-                    className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
-                    type="button"
-                    onClick={handleReset}
-                  >
-                    Back to Routes
-                  </button>
-                </div>
+            </div>
+          )}
+          {flightState === "checkin" && selectedFlight && (
+            <div className="relative z-10 flex min-h-screen flex-col items-center justify-center gap-8">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-slate-300">
+                  Check-in
+                </p>
+                <h2 className="mt-2 text-3xl font-semibold tracking-[0.2em] text-slate-100">
+                  {selectedFlight.origin} → {selectedDestinationName}
+                </h2>
+                <p className="mt-3 text-sm text-slate-300">
+                  Boarding pass ready. Your focus flight lasts{" "}
+                  {formatTime(selectedFlight.durationSeconds)}.
+                </p>
+                <div className="mt-4" />
               </div>
-            )}
-          </div>
+              <BoardingPass
+                origin={selectedFlight.origin}
+                destination={selectedFlight.destination}
+                durationSeconds={selectedFlight.durationSeconds}
+                passengerName={passengerName}
+                onTear={handleStart}
+              />
+              <button
+                className="rounded-full border border-white/20 px-6 py-3 text-xs uppercase tracking-[0.4em] text-slate-200 transition hover:border-white/40"
+                type="button"
+                onClick={handleReset}
+              >
+                Back to Routes
+              </button>
+            </div>
+          )}
         </div>
       )}
     </div>
