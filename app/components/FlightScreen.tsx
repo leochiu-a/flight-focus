@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { Volume2, VolumeX } from "lucide-react";
 import BoardingPass from "./BoardingPass";
 import FlightMap from "./FlightMap";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -97,9 +98,11 @@ export default function FlightScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const routeState = pathname === "/flight" ? "checkin" : "select";
+  const audioRef = useRef<HTMLAudioElement | null>(null);
   const [flightState, setFlightState] = useState<
     "select" | "checkin" | "in_flight" | "completed" | "cancelled"
   >("select");
+  const [musicEnabled, setMusicEnabled] = useState(true);
   const [selectedRegion, setSelectedRegion] = useState(DEFAULT_REGION_ID);
   const [selectedFlight, setSelectedFlight] = useState<Flight | null>(
     DEFAULT_REGION_FLIGHTS[0] ?? ALL_FLIGHTS[0] ?? null
@@ -171,6 +174,36 @@ export default function FlightScreen() {
       setFlightState("checkin");
     }
   }, [flightState, routeState]);
+
+  useEffect(() => {
+    if (!audioRef.current) {
+      const audio = new Audio(
+        "https://raw.githubusercontent.com/leochiu-a/assets-for-codepen/main/flight%20focus/1.mp3"
+      );
+      audio.loop = true;
+      audio.preload = "auto";
+      audioRef.current = audio;
+    }
+
+    return () => {
+      audioRef.current?.pause();
+      audioRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    if (flightState === "in_flight" && musicEnabled) {
+      audio.currentTime = 0;
+      void audio.play();
+      return;
+    }
+
+    audio.pause();
+    audio.currentTime = 0;
+  }, [flightState, musicEnabled]);
 
   useEffect(() => {
     if (isComplete && flightState === "in_flight") {
@@ -345,6 +378,19 @@ export default function FlightScreen() {
                   }}
                 >
                   {cameraMode === "fit" ? "Follow Plane" : "Fit Route"}
+                </button>
+                <button
+                  aria-label={musicEnabled ? "Mute music" : "Unmute music"}
+                  aria-pressed={musicEnabled}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-white/20 text-slate-200 transition hover:border-white/40 hover:text-white"
+                  type="button"
+                  onClick={() => setMusicEnabled((value) => !value)}
+                >
+                  {musicEnabled ? (
+                    <Volume2 className="h-4 w-4" />
+                  ) : (
+                    <VolumeX className="h-4 w-4" />
+                  )}
                 </button>
                 <div className="flex items-center gap-3">
                   {flightState === "in_flight" ? (
